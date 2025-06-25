@@ -1,4 +1,7 @@
 from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.services.admin_notfication_service import AdminNotificationService
 from app.services.geographic_analysis_service import GeographicAnalysis
 from app.services.record_history_analysis_service import RecordAvailability
 from app.services.transaction_pattern_analysis_service import PatternAnalysis
@@ -43,3 +46,6 @@ async def get_transaction_analysis_service(
         llm_service=llm_service,
         dataIntegration_service=data_integration_service
     )
+
+async def get_admin_notification_service(session: AsyncSession = Depends(get_session)):
+    return AdminNotificationService(session)

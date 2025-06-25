@@ -94,11 +94,11 @@ class propmtService:
     ## Transaction Details
     {transaction.model_dump_json()}
 
-    ## System Analysis
+    ## System Analysis do by our system according to past data records and transaction data
 
-    - **Customer Age:** {customer_old}
-    - **Merchant Age:** {merchant_old}
-    - **Payment Method Age:** {payment_method_old}
+    - **Customer Age in our System:** {customer_old}
+    - **Merchant Age in our System:** {merchant_old}
+    - **Payment Method Age for a customer :** {payment_method_old}
 
     ## Country & Payment Method Analysis
 
@@ -119,6 +119,7 @@ class propmtService:
 
     Please analyze the above data and provide a risk score, risk factors, reasoning, and recommended action as per the system prompt.
     """
+
         return user_prompt
 
     def get_system_prompt(self) -> str:

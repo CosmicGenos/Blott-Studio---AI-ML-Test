@@ -45,12 +45,16 @@ class TransactionRiskAnalysis:
 
         is_merchant_is_good_in_history = "he is a new merchant, we don't have history to analyze."
         if not is_merchant_new:
-            merchant_individual_risk_score, transaction_count_involved = await self.record_availability.get_merchant_risk_and_transaction_count(
+            result = await self.record_availability.get_merchant_risk_and_transaction_count(
                 transaction.merchant.id)
-            is_merchant_is_good_in_history = (
-                f"according to past data records, this merchant has a risk score of "
-                f"{merchant_individual_risk_score} and has processed {transaction_count_involved} ."
-            )
+            if result is None:
+                is_merchant_is_good_in_history = "it is a new category for this merchant, we don't have history to analyze."
+            else:
+                merchant_individual_risk_score, transaction_count_involved = result
+                is_merchant_is_good_in_history = (
+                    f"according to past data records, this merchant has a risk score of "
+                    f"{merchant_individual_risk_score} and has processed {transaction_count_involved} ."
+                )
 
         # step 2: analyze transaction patterns
 
@@ -68,14 +72,18 @@ class TransactionRiskAnalysis:
 
         merchant_category_stats = "Since this is a new merchant, we don't have category statistics to analyze."
         if not is_merchant_new:
-            mean, variance = await self.pattern_analysis.analyze_merchant_sells_for_category(
+            result = await self.pattern_analysis.analyze_merchant_sells_for_category(
                 transaction.merchant.id,
                 transaction.merchant.category
             )
-            merchant_category_stats = (
-                f"according to past data records, for this merchant category with this given merchant, "
-                f"we wind average price of {mean} and variability (standard deviation) of {variance}."
-            )
+            if result is None:
+                merchant_category_stats = "it is a new category for this merchant, we don't have history to analyze."
+            else:
+                mean, variance = result
+                merchant_category_stats = (
+                    f"according to past data records, for this merchant category with this given merchant, "
+                    f"we wind average price of {mean} and variability (standard deviation) of {variance}."
+                )
 
 
         # step 3: geographic analysis
@@ -107,7 +115,7 @@ class TransactionRiskAnalysis:
             transaction_velocity=Transcation_velocity,
             merchant_risk_score=is_merchant_is_good_in_history
         )
-
+        print("\n===== USER PROMPT =====\n", user_prompt, "\n========================\n")
 
         # step 5: get system prompt
         system_prompt = self.prompt_service.get_system_prompt()
@@ -129,7 +137,8 @@ class TransactionRiskAnalysis:
         merchant_primary_key = await self.dataIntegration_service.save_merchant_data(
             merchant_id=transaction.merchant.id,
             is_new_merchant=is_merchant_new,
-            individual_risk_score=llm_response.merchant_risk_score)
+            individual_risk_score=llm_response.merchant_risk_score,
+            merchant_name=transaction.merchant.name)
 
         payment_method_primary_key = await self.dataIntegration_service.save_payment_method(
             customer_no=customer_primary_key,
@@ -139,12 +148,12 @@ class TransactionRiskAnalysis:
             country_of_issue=transaction.payment_method.country_of_issue
         )
 
-        _ = await self.dataIntegration_service.save_customer_location(
+        customer_location_primary_key = await self.dataIntegration_service.save_customer_location(
             customer_no=customer_primary_key,
             location=transaction.customer.country
         )
 
-        _ = await self.dataIntegration_service.save_customer_ip_address(
+        customer_ip_address_primary_key = await self.dataIntegration_service.save_customer_ip_address(
             customer_no=customer_primary_key,
             ip_address=transaction.customer.ip_address
         )
@@ -185,6 +194,10 @@ class TransactionRiskAnalysis:
             customer_no=customer_primary_key,
             merchant_no= merchant_primary_key,
             risk_score_id=risk_score_primary_key,
+            merchant_category_id=merchant_category_primary_key,
+            customer_payment_method_id=payment_method_primary_key,
+            customer_location_id=customer_location_primary_key,
+            customer_ip_address_id= customer_ip_address_primary_key
         )
 
         await self.dataIntegration_service.commit_all()

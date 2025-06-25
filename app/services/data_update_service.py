@@ -50,14 +50,15 @@ class DataIntegration:
             await self.db_session.rollback()
             raise e
 
-    async def save_merchant_data(self, merchant_id: str, is_new_merchant: bool,
+    async def save_merchant_data(self, merchant_id: str,merchant_name:str, is_new_merchant: bool,
                                   individual_risk_score: float) -> int:
         try:
             if is_new_merchant:
                 merchant = Merchant(
                     merchant_id=merchant_id,
                     individual_average_risk_score=individual_risk_score,
-                    transaction_count=1
+                    transaction_count=1,
+                    merchant_name=merchant_name
                 )
                 self.db_session.add(merchant)
                 await self.db_session.flush()
@@ -194,13 +195,19 @@ class DataIntegration:
             raise e
 
     async def save_notification(self, transaction_no: int,
-                                 customer_no: int, merchant_no: int, risk_score_id: int) -> int:
+                                 customer_no: int, merchant_no: int, risk_score_id: int ,customer_payment_method_id: int,
+                                customer_ip_address_id:int,customer_location_id:int,
+                                merchant_category_id:int) -> int:
         try:
             notification = Notification(
                 transaction_id=transaction_no,
                 customer_no=customer_no,
                 merchant_no=merchant_no,
-                risk_score_id=risk_score_id
+                risk_score_id=risk_score_id,
+                customer_payment_method_id = customer_payment_method_id,
+                customer_ip_address_id = customer_ip_address_id,
+                customer_location_id = customer_location_id,
+                merchant_category_id = merchant_category_id
             )
             self.db_session.add(notification)
             await self.db_session.flush()

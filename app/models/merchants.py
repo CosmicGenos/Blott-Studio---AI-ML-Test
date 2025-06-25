@@ -11,6 +11,7 @@ class Merchant(SQLModel, table=True):
 
     merchant_no: int = Field(primary_key=True)
     merchant_id: str = Field(unique=True, index=True)
+    merchant_name: str = Field(max_length=255)
     individual_average_risk_score: float = 0.0
     transaction_count: int = 0
     created_at: datetime = Field(

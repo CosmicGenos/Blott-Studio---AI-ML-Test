@@ -16,11 +16,11 @@ class LLMService:
             api_key=os.getenv("DEEPINFRA_API_KEY","nSaVs82I0ZTuB9k0W2TdTQMGZKPsm6g7"),
             base_url="https://api.deepinfra.com/v1/openai",
         )
-        self.model = "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+        self.model = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
         self.max_tokens = 500
         self.temperature = 0.1
 
-    def _create_payload(self, system_prompt: str, user_prompt: str) -> dict:
+    def create_payload(self, system_prompt: str, user_prompt: str) -> dict:
 
         return {
             "model": self.model,
@@ -40,7 +40,7 @@ class LLMService:
         wait=wait_exponential(multiplier=1, min=1, max=10),
         retry=retry_if_exception_type((RateLimitError, ConnectionError, TimeoutError))
     )
-    async def _call_llm_with_retry(self, payload: dict) -> dict:
+    async def call_llm_with_retry(self, payload: dict) -> dict:
 
         try:
             response = await self.client.chat.completions.create(**payload)
@@ -52,7 +52,7 @@ class LLMService:
             logger.error(f"LLM API call failed: {str(e)}")
             raise
 
-    def _parse_llm_response(self, raw_response: dict) -> dict:
+    def parse_llm_response(self, raw_response: dict) -> dict:
 
         try:
 
@@ -76,14 +76,14 @@ class LLMService:
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON in LLM response: {str(e)}")
 
-    def _validate_response(self, parsed_data: dict) -> RiskAssessmentDTO:
+    def validate_response(self, parsed_data: dict) -> RiskAssessmentDTO:
 
         try:
             return RiskAssessmentDTO(**parsed_data)
         except ValidationError as e:
             raise ValueError(f"Response validation failed: {str(e)}")
 
-    def _create_fallback_response(self, error_msg: str) -> RiskAssessmentDTO:
+    def create_fallback_response(self, error_msg: str) -> RiskAssessmentDTO:
 
         return RiskAssessmentDTO(
             risk_score=0.5,
@@ -101,11 +101,11 @@ class LLMService:
     ) -> RiskAssessmentDTO:
 
         try:
-            payload = self._create_payload(system_prompt, user_prompt)
-            raw_response = await self._call_llm_with_retry(payload)
+            payload = self.create_payload(system_prompt, user_prompt)
+            raw_response = await self.call_llm_with_retry(payload)
             print(f"Raw response from LLM: {raw_response}")
-            parsed_data = self._parse_llm_response(raw_response)
-            validated_response = self._validate_response(parsed_data)
+            parsed_data = self.parse_llm_response(raw_response)
+            validated_response = self.validate_response(parsed_data)
             logger.info(f"Successfully analyzed transaction with risk score: {validated_response.risk_score}")
             return validated_response
 
@@ -113,4 +113,4 @@ class LLMService:
 
             logger.error(f"LLM risk assessment failed: {str(e)}", exc_info=True)
 
-            return self._create_fallback_response(str(e))
+            return self.create_fallback_response(str(e))

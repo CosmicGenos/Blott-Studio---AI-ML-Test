@@ -20,3 +20,4 @@ class CustomerPaymentMethod(SQLModel, table=True):
 
     customer: "Customer" = Relationship(back_populates="payment_methods")
     transactions: list["Transaction"] = Relationship(back_populates="customer_payment_method")
+    notifications: list["Notification"] = Relationship(back_populates="customer_payment_method")

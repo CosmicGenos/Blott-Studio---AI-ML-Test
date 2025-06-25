@@ -17,3 +17,4 @@ class CustomerLocation(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc)
     )
     customer: "Customer" = Relationship(back_populates="locations")
+    notifications: list["Notification"] = Relationship(back_populates="customer_location")

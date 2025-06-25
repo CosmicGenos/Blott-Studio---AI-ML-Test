@@ -1,4 +1,3 @@
-
 import httpx
 from fastapi import HTTPException
 
@@ -15,8 +14,8 @@ class GeographicAnalysis:
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(f"http://ip-api.com/json/{ip_address}")
-                response.raise_for_status()
-                data = response.json()
+                await response.raise_for_status()
+                data = await response.json()
 
                 if data.get("status") == "success":
                     return data.get("countryCode", "Unknown")

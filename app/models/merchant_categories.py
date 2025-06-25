@@ -18,3 +18,4 @@ class MerchantCategory(SQLModel, table=True):
     merchant: "Merchant" = Relationship(back_populates="categories")
 
     transactions: list["Transaction"] = Relationship(back_populates="merchant_category")
+    notifications: list["Notification"] = Relationship(back_populates="merchant_category")

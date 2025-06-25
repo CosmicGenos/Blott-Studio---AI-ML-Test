@@ -16,3 +16,4 @@ class CustomerIPAddress(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc)
     )
     customer: "Customer" = Relationship(back_populates="ip_addresses")
+    notifications: list["Notification"] = Relationship(back_populates="customer_ip_address")

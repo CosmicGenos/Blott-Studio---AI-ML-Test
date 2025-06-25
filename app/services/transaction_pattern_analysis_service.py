@@ -32,7 +32,6 @@ class PatternAnalysis:
         if not category:
             return None
 
-
         transaction_stmt = select(Transaction).where(
             Transaction.merchant_id == merchant.merchant_no,
             Transaction.merchant_category_id == category.category_no

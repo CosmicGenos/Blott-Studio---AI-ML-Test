@@ -25,7 +25,6 @@ class Transaction(SQLModel, table=True):
 
     customer: Optional["Customer"] = Relationship(back_populates="transactions") #"Each transaction knows which customer made it."
     merchant: Optional["Merchant"] = Relationship(back_populates="transactions")
-    # risk_score: Optional["RiskScore"] = Relationship(back_populates="transactions")
     merchant_category: Optional["MerchantCategory"] = Relationship(back_populates="transactions")
     customer_payment_method: Optional["CustomerPaymentMethod"] = Relationship(back_populates="transactions")
     notifications: Optional["Notification"] = Relationship(back_populates="transaction")
