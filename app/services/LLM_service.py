@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class LLMService:
     def __init__(self):
         self.client = AsyncOpenAI(
-            api_key=os.getenv("DEEPINFRA_API_KEY","nSaVs82I0ZTuB9k0W2TdTQMGZKPsm6g7"),
+            api_key=os.getenv("DEEPINFRA_API_KEY"),
             base_url="https://api.deepinfra.com/v1/openai",
         )
         self.model = "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
